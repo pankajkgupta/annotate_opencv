@@ -12,7 +12,7 @@ class Rect:
 class Circle:
     x = None
     y = None
-    r = 8
+    r = 6
     # Drag in progress
     drag = False
     # already present
@@ -86,7 +86,7 @@ def init(annot_obj, joints, annots_df, windowName, windowWidth, windowHeight, co
         # Set rect to zero width and height
         annot_obj.joints[jt].x = 0
         annot_obj.joints[jt].y = 0
-        annot_obj.joints[jt].r = 8
+        annot_obj.joints[jt].r = 6
         annot_obj.active = True
 
 

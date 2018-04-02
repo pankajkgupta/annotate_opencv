@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import cv2, numpy as np
 import sys
 from time import sleep
@@ -12,7 +14,7 @@ import os
 import glob
 
 
-root_path = r"/media/clpsshare/pgupta/0f4db67a-4533-45ff-b2e3-86cef598973d/"
+root_path = r"./data/"
 
 
 def get_filenames():
@@ -41,27 +43,27 @@ def show_video(v_path):
     basepath = os.path.split(v_path)
     annot_file = basepath[0] + '/pose_' + basepath[1][:-4] + '.csv'
     annots = pd.read_csv(annot_file)
-    drawjoints.init(drawjoints.annots, joints, annots, player_wname, playerwidth, playerheight, colorDict)
-    cv2.setMouseCallback(player_wname, drawjoints.dragcircle, drawjoints.annots)
-    controls = np.zeros((50, int(playerwidth)), np.uint8)
+    annotate_tools.init(annotate_tools.annots, joints, annots, player_wname, playerwidth, playerheight, colorDict)
+    cv2.setMouseCallback(player_wname, annotate_tools.dragcircle, annotate_tools.annots)
+    controls = np.zeros((50, int(playerwidth*2)), np.uint8)
     cv2.putText(controls, "W/w: Play, S/s: Stay, A/a: Prev, D/d: Next, E/e: Fast, Q/q: Slow, Esc: Exit", (40, 20),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.5, 255)
     tots = cap.get(cv2.CAP_PROP_FRAME_COUNT)
     i = 0
-    cv2.createTrackbar('S', 'video', 0, int(tots) - 1, flick)
-    cv2.setTrackbarPos('S', 'video', 0)
-    cv2.createTrackbar('F', 'video', 1, 100, flick)
+    cv2.createTrackbar('S', player_wname, 0, int(tots) - 1, flick)
+    cv2.setTrackbarPos('S', player_wname, 0)
+    cv2.createTrackbar('F', player_wname, 1, 100, flick)
     frame_rate = int(cap.get(cv2.CAP_PROP_FPS))
     if frame_rate is None:
         frame_rate = 30
-    cv2.setTrackbarPos('F', 'video', frame_rate)
+    cv2.setTrackbarPos('F', player_wname, frame_rate)
 
     def process(im):
         return cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
 
     status = 'stay'
     while True:
-        cv2.imshow("controls", controls)
+        cv2.imshow(control_wname, controls)
         try:
             if i == tots - 1:
                 i = 0
@@ -74,9 +76,9 @@ def show_video(v_path):
                 im = cv2.resize(im, (500, 500))
                 controls = cv2.resize(controls, (im.shape[1], 25))
             # cv2.putText(im, status, )
-            cv2.imshow('video', im)
+            cv2.imshow(player_wname, im)
 
-            drawjoints.updateAnnots(drawjoints.annots, i, im)
+            annotate_tools.updateAnnots(annotate_tools.annots, i, im)
             status = {ord('s'): 'stay', ord('S'): 'stay',
                       ord('w'): 'play', ord('W'): 'play',
                       ord('a'): 'prev_frame', ord('A'): 'prev_frame',
@@ -91,10 +93,10 @@ def show_video(v_path):
                 frame_rate = cv2.getTrackbarPos('F', 'video')
                 sleep((0.1 - frame_rate / 1000.0) ** 21021)
                 i += 1
-                cv2.setTrackbarPos('S', 'video', i)
+                cv2.setTrackbarPos('S', player_wname, i)
                 continue
             if status == 'stay':
-                i = cv2.getTrackbarPos('S', 'video')
+                i = cv2.getTrackbarPos('S', player_wname)
             if status == 'exit':
                 annots.to_csv(annot_file, index=False)
                 break
@@ -104,15 +106,15 @@ def show_video(v_path):
                 status = 'stay'
             if status == 'next_frame':
                 i += 1
-                cv2.setTrackbarPos('S', 'video', i)
+                cv2.setTrackbarPos('S', player_wname, i)
                 status = 'stay'
             if status == 'slow':
                 frame_rate = max(frame_rate - 5, 0)
-                cv2.setTrackbarPos('F', 'video', frame_rate)
+                cv2.setTrackbarPos('F', player_wname, frame_rate)
                 status = 'play'
             if status == 'fast':
                 frame_rate = min(100, frame_rate + 5)
-                cv2.setTrackbarPos('F', 'video', frame_rate)
+                cv2.setTrackbarPos('F', player_wname, frame_rate)
                 status = 'play'
             if status == 'snap':
                 cv2.imwrite("./" + "Snap_" + str(i) + ".jpg", im)
@@ -121,8 +123,8 @@ def show_video(v_path):
 
         except KeyError:
             print "Invalid Key was pressed"
-    cv2.destroyWindow('video')
-    cv2.destroyWindow('controls')
+    cv2.destroyWindow(player_wname)
+    cv2.destroyWindow(control_wname)
 
 # Define the drag object
 
