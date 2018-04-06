@@ -53,7 +53,6 @@ class annots:
 
     # Return flag
     returnflag = False
-
     frame_n = 0
     joints_df = []
     colorDict = {}
@@ -110,7 +109,7 @@ def dragcircle(event, x, y, flags, dragObj):
     for joint_name in dragObj.joints:
         joint = dragObj.joints[joint_name]
 
-        if joint.x == 'nan':
+        if joint.x == 0:
             continue
 
         if pointInCircle(x, y, int(joint.x), int(joint.y), joint.r):
@@ -157,7 +156,7 @@ def updateAnnots(annots_obj, frame_n, im):
     annots_obj.image = im
     annots_obj.frame_n = frame_n
     for joint in annot_df:
-        annots_obj.joints[joint].x, annots_obj.joints[joint].y = annot_df[joint].values[0].split('-')
+        annots_obj.joints[joint].x, annots_obj.joints[joint].y, _score = annot_df[joint].values[0].split('-')
 
     clearCanvasNDraw(annots_obj)
     return
@@ -196,6 +195,7 @@ def mouseDown(eX, eY, dragObj,jt):
 # enddef
 
 def mouseMove(eX, eY, dragObj, jt):
+    jt.active = True
     if jt.drag & dragObj.active:
         clearCanvasNDraw(dragObj)
         return
@@ -218,7 +218,8 @@ def mouseMove(eX, eY, dragObj, jt):
             jt.y = dragObj.keepWithin.y + dragObj.keepWithin.h - 1 - jt.r
         # endif
 
-        dragObj.joints_df.loc[dragObj.joints_df['frame_n'] == dragObj.frame_n, jt.label] = str(jt.x) + '-' + str(jt.y)
+        # update the joint with score 10 since this is done by a human annotator
+        dragObj.joints_df.loc[dragObj.joints_df['frame_n'] == dragObj.frame_n, jt.label] = str(jt.x) + '-' + str(jt.y) + '-10'
         clearCanvasNDraw(dragObj)
         return
     # endif
@@ -250,11 +251,14 @@ def clearCanvasNDraw(dragObj):
     tmp1 = dragObj.image.copy()
     for joint_name in dragObj.joints:
         joint = dragObj.joints[joint_name]
-        if joint.x == 'nan':
+        if joint.x == 0:
             return
         cv2.circle(tmp, (int(joint.x), int(joint.y)),
                joint.r, dragObj.colorDict[joint_name], -1)
     # apply the overlay
+    colorList = [[0, 0, 255], [0, 255, 0], [0, 255, 255]]
+    qual = dragObj.joints_df['quality'][dragObj.frame_n]
+    cv2.circle(tmp, (10, 10), 10, colorList[qual], -1)
     cv2.addWeighted(tmp, 0.5, tmp1, 0.5, 0, tmp1)
     cv2.imshow(dragObj.wname, tmp1)
     # cv2.waitKey()

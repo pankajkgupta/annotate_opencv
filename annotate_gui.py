@@ -14,7 +14,7 @@ import os
 import glob
 
 
-root_path = r"./data/"
+root_path = r'/media/data_cifs/pgupta/0f4db67a-4533-45ff-b2e3-86cef598973d/'
 
 
 def get_filenames():
@@ -30,8 +30,10 @@ def onselect(evt):
     show_video(root_path+value)
 
 def show_video(v_path):
-    cv2.destroyAllWindows()
 
+    basepath = os.path.split(v_path)
+    player_wname = basepath[1][:-4]
+    cv2.destroyAllWindows()
     cv2.namedWindow(player_wname)
     cv2.moveWindow(player_wname, 400, 150)
     cv2.namedWindow(control_wname)
@@ -40,13 +42,13 @@ def show_video(v_path):
     # video = sys.argv[1]
     # video = '/media/clpsshare/pgupta/0f4db67a-4533-45ff-b2e3-86cef598973d/0f4db67a-4533-45ff-b2e3-86cef598973d_0000.mp4'
     cap = cv2.VideoCapture(v_path)
-    basepath = os.path.split(v_path)
+
     annot_file = basepath[0] + '/pose_' + basepath[1][:-4] + '.csv'
     annots = pd.read_csv(annot_file)
     annotate_tools.init(annotate_tools.annots, joints, annots, player_wname, playerwidth, playerheight, colorDict)
     cv2.setMouseCallback(player_wname, annotate_tools.dragcircle, annotate_tools.annots)
-    controls = np.zeros((50, int(playerwidth*2)), np.uint8)
-    cv2.putText(controls, "W/w: Play, S/s: Stay, A/a: Prev, D/d: Next, E/e: Fast, Q/q: Slow, Esc: Exit", (40, 20),
+    controls = np.zeros((50, int(playerwidth*3)), np.uint8)
+    cv2.putText(controls, "W/w: Play, S/s: Stay, A/a: Prev, D/d: Next, E/e: Fast, Q/q: Slow, Esc: Exit, g: good, b: bad, n: no annot.", (40, 20),
                 cv2.FONT_HERSHEY_SIMPLEX, 0.5, 255)
     tots = cap.get(cv2.CAP_PROP_FRAME_COUNT)
     i = 0
@@ -62,6 +64,10 @@ def show_video(v_path):
         return cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
 
     status = 'stay'
+    good_annot = False
+    bad_annot = False
+    no_annot = False
+    qual_update = -2
     while True:
         cv2.imshow(control_wname, controls)
         try:
@@ -79,6 +85,10 @@ def show_video(v_path):
             cv2.imshow(player_wname, im)
 
             annotate_tools.updateAnnots(annotate_tools.annots, i, im)
+
+            if qual_update != -2:
+                annots.loc[annots['frame_n'] == i, 'quality'] = qual_update
+
             status = {ord('s'): 'stay', ord('S'): 'stay',
                       ord('w'): 'play', ord('W'): 'play',
                       ord('a'): 'prev_frame', ord('A'): 'prev_frame',
@@ -86,6 +96,9 @@ def show_video(v_path):
                       ord('q'): 'slow', ord('Q'): 'slow',
                       ord('e'): 'fast', ord('E'): 'fast',
                       ord('c'): 'snap', ord('C'): 'snap',
+                      ord('g'): 'good_annot',
+                      ord('b'): 'bad_annot',
+                      ord('n'): 'no_annot',
                       -1: status,
                       27: 'exit'}[cv2.waitKey(10)]
 
@@ -120,6 +133,27 @@ def show_video(v_path):
                 cv2.imwrite("./" + "Snap_" + str(i) + ".jpg", im)
                 print "Snap of Frame", i, "Taken!"
                 status = 'stay'
+            if status == 'good_annot':
+                good_annot = not good_annot
+                if good_annot:
+                    qual_update = 1
+                else:
+                    qual_update = -2
+                status = 'stay'
+            if status == 'bad_annot':
+                bad_annot = not bad_annot
+                if bad_annot:
+                    qual_update = -1
+                else:
+                    qual_update = -2
+                status = 'stay'
+            if status == 'no_annot':
+                no_annot = not no_annot
+                if no_annot:
+                    qual_update = 0
+                else:
+                    qual_update = -2
+                status = 'stay'
 
         except KeyError:
             print "Invalid Key was pressed"
@@ -143,7 +177,7 @@ joints = ['nose', 'r_shoulder', 'r_elbow', 'r_wrist', 'l_shoulder', 'l_elbow', '
 
 
 NUM_COLORS = len(joints)
-colorList = [[0, 0, 255], [0, 255, 0], [0, 213, 0], [0, 170, 0], [255, 0, 0], [213, 0, 0], [170, 0, 0]]
+colorList = [[0, 0, 255], [0, 255, 170], [0, 170, 255], [0, 255, 0], [255, 0, 170], [255, 0, 85], [255, 0, 0]]
 colorDict = dict(zip(joints, colorList))
 
 root = Tk()
