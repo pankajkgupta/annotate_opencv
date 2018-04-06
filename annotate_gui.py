@@ -89,6 +89,7 @@ def show_video(v_path):
             if qual_update != -2:
                 annots.loc[annots['frame_n'] == i, 'quality'] = qual_update
 
+            key = cv2.waitKey(10)
             status = {ord('s'): 'stay', ord('S'): 'stay',
                       ord('w'): 'play', ord('W'): 'play',
                       ord('a'): 'prev_frame', ord('A'): 'prev_frame',
@@ -99,11 +100,11 @@ def show_video(v_path):
                       ord('g'): 'good_annot',
                       ord('b'): 'bad_annot',
                       ord('n'): 'no_annot',
-                      -1: status,
-                      27: 'exit'}[cv2.waitKey(10)]
+                      255: status,
+                      27: 'exit'}[key]
 
             if status == 'play':
-                frame_rate = cv2.getTrackbarPos('F', 'video')
+                frame_rate = cv2.getTrackbarPos('F', player_wname)
                 sleep((0.1 - frame_rate / 1000.0) ** 21021)
                 i += 1
                 cv2.setTrackbarPos('S', player_wname, i)
@@ -115,7 +116,7 @@ def show_video(v_path):
                 break
             if status == 'prev_frame':
                 i -= 1
-                cv2.setTrackbarPos('S', 'video', i)
+                cv2.setTrackbarPos('S', player_wname, i)
                 status = 'stay'
             if status == 'next_frame':
                 i += 1
