@@ -179,8 +179,8 @@ def mouseDown(eX, eY, dragObj,jt):
 
         # This has to be below all of the other conditions
         # if pointInCircle(eX, eY, dragObj.outCircle.x, dragObj.outCircle.y, dragObj.outCircle.r):
-        dragObj.anchor[jt.label].x = eX - int(jt.x)
-        dragObj.anchor[jt.label].y = eY - int(jt.y)
+        # dragObj.anchor[jt.label].x = eX - int(jt.x)
+        # dragObj.anchor[jt.label].y = eY - int(jt.y)
         jt.hold = True
         # jt.drag = True
         return
@@ -202,8 +202,10 @@ def mouseMove(eX, eY, dragObj, jt):
     # endif
 
     if jt.hold:
-        jt.x = eX - dragObj.anchor[jt.label].x
-        jt.y = eY - dragObj.anchor[jt.label].y
+        # jt.x = eX - dragObj.anchor[jt.label].x
+        # jt.y = eY - dragObj.anchor[jt.label].y
+        jt.x = eX
+        jt.y = eY
 
         if jt.x < dragObj.keepWithin.x:
             jt.x = dragObj.keepWithin.x
