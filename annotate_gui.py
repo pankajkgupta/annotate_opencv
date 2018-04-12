@@ -101,6 +101,7 @@ def show_video(v_path):
                       ord('b'): 'bad_annot',
                       ord('n'): 'no_annot',
                       255: status,
+                      -1: status,
                       27: 'exit'}[key]
 
             if status == 'play':
