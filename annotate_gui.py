@@ -34,7 +34,7 @@ def show_video(v_path):
     basepath = os.path.split(v_path)
     player_wname = basepath[1][:-4]
     cv2.destroyAllWindows()
-    cv2.namedWindow(player_wname)
+    cv2.namedWindow(player_wname, cv2.WINDOW_GUI_NORMAL)
     cv2.moveWindow(player_wname, 400, 150)
     cv2.namedWindow(control_wname)
     cv2.moveWindow(control_wname, 400, 50)
