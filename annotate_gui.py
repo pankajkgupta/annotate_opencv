@@ -12,10 +12,7 @@ from Tkinter import *
 import ttk
 import os
 import glob
-
-
-root_path = r'/media/data_cifs/pgupta/0f4db67a-4533-45ff-b2e3-86cef598973d/'
-
+from ConfigParser import SafeConfigParser
 
 def get_filenames():
     path = root_path + "*.mp4"
@@ -43,9 +40,12 @@ def show_video(v_path):
     # video = '/media/clpsshare/pgupta/0f4db67a-4533-45ff-b2e3-86cef598973d/0f4db67a-4533-45ff-b2e3-86cef598973d_0000.mp4'
     cap = cv2.VideoCapture(v_path)
 
+    playerwidth = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+    playerheight = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+
     annot_file = basepath[0] + '/pose_' + basepath[1][:-4] + '.csv'
     annots = pd.read_csv(annot_file)
-    annotate_tools.init(annotate_tools.annots, joints, annots, player_wname, playerwidth, playerheight, colorDict)
+    annotate_tools.init(annotate_tools.annots, joints, joint_radius, annots, player_wname, playerwidth, playerheight, colorDict, multiframe)
     cv2.setMouseCallback(player_wname, annotate_tools.dragcircle, annotate_tools.annots)
     controls = np.zeros((50, int(playerwidth*3)), np.uint8)
     cv2.putText(controls, "W/w: Play, S/s: Stay, A/a: Prev, D/d: Next, E/e: Fast, Q/q: Slow, Esc: Exit, g: good, b: bad, n: no annot.", (40, 20),
@@ -78,9 +78,9 @@ def show_video(v_path):
             r = playerwidth / im.shape[1]
             dim = (int(playerwidth), int(im.shape[0] * r))
             im = cv2.resize(im, dim, interpolation=cv2.INTER_AREA)
-            if im.shape[0] > 600:
-                im = cv2.resize(im, (500, 500))
-                controls = cv2.resize(controls, (im.shape[1], 25))
+            # if im.shape[0] > 600:
+            #     im = cv2.resize(im, (500, 500))
+            #     controls = cv2.resize(controls, (im.shape[1], 25))
             # cv2.putText(im, status, )
             cv2.imshow(player_wname, im)
 
@@ -164,19 +164,21 @@ def show_video(v_path):
 
 # Define the drag object
 
-playerwidth = 320.0
-playerheight = 240.0
+config 		= SafeConfigParser()
+config.read('config.ini')
+
+cfg = config.get('configsection', 'config')
+root_path 	= config.get(cfg, 'dataPath')
+joints 	= config.get(cfg, 'joints').split(', ')
+joint_radius = int(config.get(cfg, 'joint_radius'))
+multiframe = int(config.get(cfg, 'multiframe'))
+
 
 def flick(x):
     pass
 
 player_wname = 'video'
 control_wname = 'controls'
-
-
-
-joints = ['nose', 'r_shoulder', 'r_elbow', 'r_wrist', 'l_shoulder', 'l_elbow', 'l_wrist']
-
 
 NUM_COLORS = len(joints)
 colorList = [[0, 0, 255], [0, 255, 170], [0, 170, 255], [0, 255, 0], [255, 0, 170], [255, 0, 85], [255, 0, 0]]
