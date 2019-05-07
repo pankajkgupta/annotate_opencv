@@ -8,11 +8,12 @@ import annotate_tools
 import pandas as pd
 import colorsys
 
-from Tkinter import *
-import ttk
+from tkinter import *
+#import ttk
+from tkinter import ttk
 import os
 import glob
-from ConfigParser import SafeConfigParser
+from configparser import ConfigParser
 
 def get_filenames():
     path = root_path + "*.mp4"
@@ -133,7 +134,7 @@ def show_video(v_path):
                 status = 'play'
             if status == 'snap':
                 cv2.imwrite("./" + "Snap_" + str(i) + ".jpg", im)
-                print "Snap of Frame", i, "Taken!"
+                print("Snap of Frame", i, "Taken!")
                 status = 'stay'
             if status == 'good_annot':
                 good_annot = not good_annot
@@ -158,13 +159,13 @@ def show_video(v_path):
                 status = 'stay'
 
         except KeyError:
-            print "Invalid Key was pressed"
+            print("Invalid Key was pressed")
     cv2.destroyWindow(player_wname)
     cv2.destroyWindow(control_wname)
 
 # Define the drag object
 
-config 		= SafeConfigParser()
+config 		= ConfigParser()
 config.read('config.ini')
 
 cfg = config.get('configsection', 'config')

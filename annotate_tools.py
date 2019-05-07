@@ -7,7 +7,7 @@ class Rect:
     h = None
 
     def printit(self):
-        print str(self.x) + ',' + str(self.y) + ',' + str(self.w) + ',' + str(self.h)
+        print(str(self.x) + ',' + str(self.y) + ',' + str(self.w) + ',' + str(self.h))
         
 class Circle:
     x = None
@@ -25,7 +25,7 @@ class Circle:
         self.label = label
 
     def printit(self):
-        print str(self.x) + ',' + str(self.y) + ',' + str(self.r)
+        print(str(self.x) + ',' + str(self.y) + ',' + str(self.r))
 
 # endclass
 
