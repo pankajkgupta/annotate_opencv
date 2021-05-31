@@ -16,7 +16,7 @@ import glob
 from configparser import ConfigParser
 
 def get_filenames():
-    path = root_path + "*.mp4"
+    path = root_path + "*.avi"
     return [os.path.basename(x) for x in sorted(glob.glob(path))]
 
 def onselect(evt):
@@ -46,6 +46,8 @@ def show_video(v_path):
 
     annot_file = basepath[0] + '/pose_' + basepath[1][:-4] + '.csv'
     annots = pd.read_csv(annot_file)
+    if 'quality' in annots: 
+        annots['quality'] = annots['quality'].fillna(0)
     annotate_tools.init(annotate_tools.annots, joints, joint_radius, annots, player_wname, playerwidth, playerheight, colorDict, multiframe)
     cv2.setMouseCallback(player_wname, annotate_tools.dragcircle, annotate_tools.annots)
     controls = np.zeros((50, int(playerwidth*3)), np.uint8)
@@ -88,7 +90,7 @@ def show_video(v_path):
             annotate_tools.updateAnnots(annotate_tools.annots, i, im)
 
             if qual_update != -2:
-                annots.loc[annots['frame_n'] == i, 'quality'] = qual_update
+                annots.loc[annots['frame'] == i, 'quality'] = qual_update
 
             key = cv2.waitKey(10)
             status = {ord('s'): 'stay', ord('S'): 'stay',
@@ -169,10 +171,14 @@ config 		= ConfigParser()
 config.read('config.ini')
 
 cfg = config.get('configsection', 'config')
-root_path 	= config.get(cfg, 'dataPath')
-joints 	= config.get(cfg, 'joints').split(', ')
-joint_radius = int(config.get(cfg, 'joint_radius'))
-multiframe = int(config.get(cfg, 'multiframe'))
+cfgDict = dict(config.items(cfg))
+root_path 	= cfgDict['datapath']
+if 'joints' in cfgDict: 
+    joints 	= cfgDict['joints'].split(', ') 
+else: 
+    joints = []
+joint_radius = int(cfgDict['joint_radius'])
+multiframe = int(cfgDict['multiframe'])
 
 
 def flick(x):
